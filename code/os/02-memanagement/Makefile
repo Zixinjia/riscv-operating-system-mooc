@@ -8,4 +8,4 @@ SRCS_C = \
 	printf.c \
 	page.c \
 
-include ../common.mk
+include ../common.mk  

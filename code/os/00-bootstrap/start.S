@@ -14,6 +14,7 @@ _start:
 					# we park the hart
 	# Setup stacks, the stack grows from bottom to top, so we put the
 	# stack pointer to the very end of the stack range.
+	//下面的代码只有hart 0 会运行 2024/6/17
 	slli	t0, t0, 10		# shift left the hart id by 1024
 	la	sp, stacks + STACK_SIZE	# set the initial stack pointer
 					# to the end of the first stack space
@@ -29,6 +30,7 @@ park:
 	# In the standard RISC-V calling convention, the stack pointer sp
 	# is always 16-byte aligned.
 .balign 16
+//定义了栈区
 stacks:
 	.skip	STACK_SIZE * MAXNUM_CPU # allocate space for all the harts stacks
 

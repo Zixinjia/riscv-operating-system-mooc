@@ -6,9 +6,10 @@
 
 include ../defines.mk
 DEFS +=
-
+# 工具链运行在64位机器上，但是生成的target程序是32位的↓
 CROSS_COMPILE = riscv64-unknown-elf-
 CFLAGS += -nostdlib -fno-builtin -g -Wall
+# 编译出32位的
 CFLAGS += -march=rv32g -mabi=ilp32
 LDFLAGS ?= -T os.ld
 
