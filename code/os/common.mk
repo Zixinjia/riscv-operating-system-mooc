@@ -3,7 +3,6 @@
 
 # Custom Macro Definition (Common part)
 
-
 include ../defines.mk
 DEFS +=
 # 工具链运行在64位机器上，但是生成的target程序是32位的↓
@@ -11,7 +10,6 @@ CROSS_COMPILE = riscv64-unknown-elf-
 CFLAGS += -nostdlib -fno-builtin -g -Wall
 # 编译出32位的
 CFLAGS += -march=rv32g -mabi=ilp32
-LDFLAGS ?= -T os.ld
 
 QEMU = qemu-system-riscv32
 QFLAGS = -nographic -smp 1 -machine virt -bios none
@@ -33,6 +31,13 @@ OBJS = ${OBJS_ASM} ${OBJS_C}
 ELF = ${OUTPUT_PATH}/os.elf
 BIN = ${OUTPUT_PATH}/os.bin
 
+USE_LINKER_SCRIPT ?= true
+ifeq (${USE_LINKER_SCRIPT}, true)
+LDFLAGS = -T ${OUTPUT_PATH}/os.ld.generated
+else
+LDFLAGS = -Ttext=0x80000000
+endif
+
 .DEFAULT_GOAL := all
 all: ${OUTPUT_PATH} ${ELF}
 
@@ -40,7 +45,16 @@ ${OUTPUT_PATH}:
 	@${MKDIR} $@
 
 # start.o must be the first in dependency!
+#
+# For USE_LINKER_SCRIPT == true, before do link, run preprocessor manually for
+# linker script.
+# -E specifies GCC to only run preprocessor
+# -P prevents preprocessor from generating linemarkers (#line directives)
+# -x c tells GCC to treat your linker script as C source file
 ${ELF}: ${OBJS}
+ifeq (${USE_LINKER_SCRIPT}, true)
+	${CC} -E -P -x c ${DEFS} ${CFLAGS} os.ld > ${OUTPUT_PATH}/os.ld.generated
+endif
 	${CC} ${CFLAGS} ${LDFLAGS} -o ${ELF} $^
 	${OBJCOPY} -O binary ${ELF} ${BIN}
 
