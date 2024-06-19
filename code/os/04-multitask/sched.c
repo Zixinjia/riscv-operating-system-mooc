@@ -3,6 +3,7 @@
 /* defined in entry.S */
 extern void switch_to(struct context *next);
 
+// 系统最多支持10个任务
 #define MAX_TASKS 10
 #define STACK_SIZE 1024
 /*
@@ -16,12 +17,14 @@ struct context ctx_tasks[MAX_TASKS];
  * _top is used to mark the max available position of ctx_tasks
  * _current is used to point to the context of current task
  */
+// top标识一共创建多少个任务
 static int _top = 0;
+// 指向当前的任务
 static int _current = -1;
 
 static void w_mscratch(reg_t x)
 {
-	asm volatile("csrw mscratch, %0" : : "r" (x));
+	asm volatile("csrw mscratch, %0" : : "r"(x));
 }
 
 void sched_init()
@@ -34,11 +37,12 @@ void sched_init()
  */
 void schedule()
 {
-	if (_top <= 0) {
+	if (_top <= 0)
+	{
 		panic("Num of task should be greater than zero!");
 		return;
 	}
-
+	// 计算下一个任务的位置   轮转
 	_current = (_current + 1) % _top;
 	struct context *next = &(ctx_tasks[_current]);
 	switch_to(next);
@@ -54,21 +58,25 @@ void schedule()
  */
 int task_create(void (*start_routin)(void))
 {
-	if (_top < MAX_TASKS) {
-		ctx_tasks[_top].sp = (reg_t) &task_stack[_top][STACK_SIZE];
-		ctx_tasks[_top].ra = (reg_t) start_routin;
+	if (_top < MAX_TASKS)
+	{
+		ctx_tasks[_top].sp = (reg_t)&task_stack[_top][STACK_SIZE];
+		ctx_tasks[_top].ra = (reg_t)start_routin;
 		_top++;
 		return 0;
-	} else {
+	}
+	else
+	{
 		return -1;
 	}
 }
 
 /*
  * DESCRIPTION
- * 	task_yield()  causes the calling task to relinquish the CPU and a new 
+ * 	task_yield()  causes the calling task to relinquish the CPU and a new
  * 	task gets to run.
  */
+// 主动放弃
 void task_yield()
 {
 	schedule();
@@ -80,6 +88,6 @@ void task_yield()
 void task_delay(volatile int count)
 {
 	count *= 50000;
-	while (count--);
+	while (count--)
+		;
 }
-

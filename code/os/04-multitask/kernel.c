@@ -18,12 +18,13 @@ void start_kernel(void)
 	page_init();
 
 	sched_init();
-
+	// 创建了两个任务
 	os_main();
 
 	schedule();
 
 	uart_puts("Would not go here!\n");
-	while (1) {}; // stop here!
+	while (1)
+	{
+	}; // stop here!
 }
-
